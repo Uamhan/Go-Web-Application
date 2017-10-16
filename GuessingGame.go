@@ -8,7 +8,7 @@ import (
 //http.ResponseWriter assembles Http servers response when written to
 //http.Request represents the clients http request
 func handler(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprintf(w, "Guessing Game")
+    fmt.Fprintf(w, "<h1>Guessing Game</h1>")
 }
 
 func main() {
