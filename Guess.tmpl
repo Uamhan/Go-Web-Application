@@ -10,15 +10,33 @@
 	<title>Guessing Game</title>
   </head>
   <body>
-	<h2>{{.Message}}</h2>
-	<h3>{{.Guess}}</h3>
-	
-	<form action="/Guess" method="get">
-	<input type="text" name="Guess"><br>
-	
-	<input type="submit" value="Guess">
-	</form>
-	
+		<div id="main-content">
+			<div class="container">
+				
+					
+					<div class="info text-center">
+						</br>
+						</br>
+						<h2>{{.Message}}</h2>
+						<h3>{{.Guess}}</h3>
+						<p>{{.Result}}</p>
+						<div>
+						<div class="col-lg-4">
+							
+						</div>
+						<div >
+							<form action="/Guess" method="get" class = "centered">
+							<input type="text" name="Guess" class="form-control"><br>
+							</br>
+							<input type="submit" value="Guess" class="btn btn-default">
+							</form>
+						</div>
+					
+						</div>
+				
+			</div>
+		</div>	
+
 	
 
     <!-- Optional JavaScript -->
