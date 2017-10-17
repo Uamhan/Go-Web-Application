@@ -7,11 +7,13 @@ import (
 	"html/template"	
 	"math/rand"
 	"time"
+	"strconv"
 
 )
 
 type Message struct {
 	Message string
+	Guess string
 }
 
 type Page struct {
@@ -37,19 +39,32 @@ func GuessHandler(w http.ResponseWriter, r *http.Request) {
 	var myRand = rand.New(seed)							//allows us to creat a number based of the seed.
 	var randNum int = myRand.Intn(20)
 	
+	cookie := http.Cookie{ Name:  "Target", Value: fmt.Sprint(randNum)}
+	
 	c, err := r.Cookie("Target")
 	
-	cookie := &http.Cookie{
-		Name:  "Target",
-		Value: fmt.Sprint(randNum),
-	}
 	if err != nil {
-		http.SetCookie(w, cookie) //sets cookie if there isint one already
+		http.SetCookie(w, &cookie) //sets cookie if there isint one already
+		c, _ = r.Cookie("Target")
 	}
+	fmt.Println(c)
+	if r.Method == "GET" {
+		
+        r.ParseForm()
+        fmt.Println("Guess:", r.Form["Guess"])
+		m := Message{}
+		if r.FormValue("Guess") == ""{
+		m = Message{Message: "Guess a number between 1 and 20 " }	
+		}else if _, err := strconv.Atoi(r.FormValue("Guess")); err == nil {
+			m = Message{Message: "Guess a number between 1 and 20 ", Guess: "Your Guess is : " + r.FormValue("Guess") }
+		}else{
+			m = Message{Message: "Guess a number between 1 and 20 ", Guess: "Invalid Guess" }	
+		}
+		t, _ := template.ParseFiles("Guess.tmpl")
+		t.Execute(w,m)
+    }
 	
-	m := Message{Message: "Guess a number between 1 and 20 "}
-	t, _ := template.ParseFiles("Guess.tmpl")
-	t.Execute(w,m)
+	
 }
 
 
