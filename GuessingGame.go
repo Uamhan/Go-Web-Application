@@ -5,6 +5,9 @@ import (
 	"io/ioutil"	
     "net/http"		
 	"html/template"	
+	"math/rand"
+	"time"
+
 )
 
 type Message struct {
@@ -28,27 +31,36 @@ func loadPage(title string) (*Page, error) {
 //function handler takes a ResponseWriter and a Request asargument
 //http.ResponseWriter assembles Http servers response when written to
 //http.Request represents the clients http request
-func Handler(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Path[len("/"):]
-    p, _ := loadPage(title)
-	//if no page is loaded loads home page
-	if p == nil{
-		p, _ = loadPage("index")
-		fmt.Fprintf(w, "<h1>%s</h1><div>%s</div>", p.Title, p.Body)
-	}else{
-	m := Message{Message: "Guess a number between 1 and 20"}
+func GuessHandler(w http.ResponseWriter, r *http.Request) {
+	
+	var seed = rand.NewSource(time.Now().UnixNano()) 	//creats a seed for the rand fucntion based on current time.
+	var myRand = rand.New(seed)							//allows us to creat a number based of the seed.
+	var randNum int = myRand.Intn(20)
+	
+	c, err := r.Cookie("Target")
+	
+	cookie := &http.Cookie{
+		Name:  "Target",
+		Value: fmt.Sprint(randNum),
+	}
+	if err != nil {
+		http.SetCookie(w, cookie) //sets cookie if there isint one already
+	}
+	
+	m := Message{Message: "Guess a number between 1 and 20 "}
 	t, _ := template.ParseFiles("Guess.tmpl")
 	t.Execute(w,m)
-	}
 }
 
-//func homeHandler(w http.ResponseWriter, r *http.Request) {
- //   p, _ := loadPage("index")
- //   fmt.Fprintf(w, "<h1>%s</h1><div>%s</div>", p.Title, p.Body)	
-//	}
+
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+   p, _ := loadPage("index")
+   fmt.Fprintf(w, "<h1>%s</h1><div>%s</div>", p.Title, p.Body)	
+}
 
 
 func main() {
-    http.HandleFunc("/", Handler)  //tells the http package to handle all requests to the web root 
+	http.HandleFunc("/",homeHandler) //tells the http package to handle all requests to the web root
+    http.HandleFunc("/Guess", GuessHandler)  //tells the http package to handle all requests to /Guess 
     http.ListenAndServe(":8080", nil) //listens and servers requests on port :8080
 }
