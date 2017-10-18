@@ -42,20 +42,23 @@ func GuessHandler(w http.ResponseWriter, r *http.Request) {
 	var myRand = rand.New(seed)                      //allows us to creat a number based of the seed.
 	var randNum int = myRand.Intn(20)                //sets number to be between 1-20
 
-	cookie := http.Cookie{Name: "Target", Value: fmt.Sprint(randNum)} //creates a new http.cookie and assigns values to it
+	target := randNum //sets value to be assiigned to cookiie
 
-	c, err := r.Cookie("Target") //checks to see if cookie with a name of Target exists and if so sets it to c
-
-	//if cookie Target dosent exist creats a cookie named Target
-	if err != nil {
-		http.SetCookie(w, &cookie)
-		c, _ = r.Cookie("Target")
+	var c, err = r.Cookie("Target") //checks to see if cookie with a name of Target exists and if so sets it to c
+	//if cookiie is set
+	if err == nil {
+		//we set target to the value of target in the cookie
+		target, _ = strconv.Atoi(c.Value)
 	}
+	//we create the cookie
+	cookie := &http.Cookie{Name: "Target", Value: strconv.Itoa(target)} //creates a new http.cookie and assigns values to it
+	//set the cookie
+	http.SetCookie(w, cookie)
 
-	r.ParseForm()                                             //parses form so we can use values from it
-	m := Message{}                                            //creats blank Message struct
-	guess, _ := strconv.ParseInt(r.FormValue("Guess"), 10, 0) //converts the Guess input from the from to an int
-	target, _ := strconv.ParseInt(c.Value, 10, 0)             // converts the target value from cookie to an int
+	r.ParseForm()                                  //parses form so we can use values from it
+	m := Message{}                                 //creats blank Message struct
+	guess, _ := strconv.Atoi(r.FormValue("Guess")) //converts the Guess input from the from to an int
+	//target, _ := strconv.ParseInt(c.Value, 10, 0)             // converts the target value from cookie to an int
 
 	//if no guesses have been made yet
 	if r.FormValue("Guess") == "" {
@@ -67,8 +70,10 @@ func GuessHandler(w http.ResponseWriter, r *http.Request) {
 		if guess == target {
 			m = Message{Message: "Guess a number between 1 and 20 ", Guess: "Your Guess is : " + r.FormValue("Guess"), Result: "Congratulations you Guessed Correctly </br> <a href=\"/Guess\">New Game</a> "}
 			//resets cookie after correct guess
-			http.SetCookie(w, &cookie)
-			c, _ = r.Cookie("Target")
+			target = randNum
+			cookie = &http.Cookie{Name: "Target", Value: strconv.Itoa(target)}
+			http.SetCookie(w, cookie)
+			//c, _ = r.Cookie("Target")
 			//guess is greater than target
 		} else if guess > target {
 			m = Message{Message: "Guess a number between 1 and 20 ", Guess: "Your Guess is : " + r.FormValue("Guess"), Result: "You Guessed to High"}
